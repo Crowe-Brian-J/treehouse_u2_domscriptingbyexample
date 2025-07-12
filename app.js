@@ -2,10 +2,8 @@ const form = document.getElementById('registrar')
 const input = form.querySelector('input')
 const ul = document.getElementById('invitedList')
 
-form.addEventListener('submit', (e) => {
-  e.preventDefault()
-  //set text, create list item
-  const text = input.value
+//createLI function to make code more modular, removed from form eventListener
+const createLI = (text) => {
   const li = document.createElement('li')
   li.textContent = text
   //create label to keep track of confirmed guests
@@ -23,6 +21,15 @@ form.addEventListener('submit', (e) => {
   const button = document.createElement('button')
   button.textContent = 'remove'
   li.appendChild(button)
+
+  return li
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault()
+  //set text, create list item
+  const text = input.value
+  const li = createLI(text)
 
   //append list item to unordered list
   ul.appendChild(li)
