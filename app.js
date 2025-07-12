@@ -18,12 +18,19 @@ form.addEventListener('submit', (e) => {
   label.appendChild(checkbox)
   //append label to list item
   li.appendChild(label)
+
+  //almost the same process as checkbox
+  const button = document.createElement('button')
+  button.textContent = 'remove'
+  li.appendChild(button)
+
   //append list item to unordered list
   ul.appendChild(li)
   //clear input value
   input.value = ''
 })
 
+//use ul to get to checkbox change
 ul.addEventListener('change', (e) => {
   e.preventDefault()
   //set
@@ -37,5 +44,15 @@ ul.addEventListener('change', (e) => {
     listItem.className = 'responded'
   } else {
     listItem.className = ''
+  }
+})
+
+ul.addEventListener('click', (e) => {
+  //can set to button's textContent or other parameter to differentiate
+  //here, we only have one button per child in ul, so tagName suffices
+  if (e.target.tagName === 'BUTTON') {
+    const li = e.target.parentNode
+    const ul = li.parentNode
+    ul.removeChild(li)
   }
 })
