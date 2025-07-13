@@ -85,10 +85,9 @@ ul.addEventListener('click', (e) => {
       li.removeChild(span)
       //change button's value to save
       button.textContent = 'save'
-
-      //undo edit to save
     } else if (button.textContent === 'save') {
-      //get input text, save to input
+      //undo edit to save
+      //get input, save to input
       const input = li.firstElementChild
       //create span element to replace input field
       const span = document.createElement('span')
