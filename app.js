@@ -41,29 +41,31 @@ document.addEventListener('DOMContentLoaded', () => {
   //createLI function to make code more modular, removed from form eventListener
   const createLI = (text) => {
     const li = document.createElement('li')
-    const span = document.createElement('span')
-    span.textContent = text
-    li.appendChild(span)
-    //create label to keep track of confirmed guests
-    const label = document.createElement('label')
-    label.textContent = 'Confirmed'
-    //create checkbox to tick confirmation
-    const checkbox = document.createElement('input')
-    checkbox.type = 'checkbox'
-    //append checkbox to label
-    label.appendChild(checkbox)
-    //append label to list item
-    li.appendChild(label)
 
-    //almost the same process as button below - change button on both to edit/remove button ?
-    const editButton = document.createElement('button')
-    editButton.textContent = 'edit'
-    li.appendChild(editButton)
+    //function to clean up process for creating elements
+    const createElement = (elementName, property, value) => {
+      const element = document.createElement(elementName)
+      element[property] = value
+      return element
+    }
+    //function to append child
+    const appendToLI = (elementName, property, value) => {
+      const element = createElement(elementName, property, value)
+      li.appendChild(element)
+      return element
+    }
 
-    //almost the same process as checkbox
-    const removeButton = document.createElement('button')
-    removeButton.textContent = 'remove'
-    li.appendChild(removeButton)
+    //create and append necessary elements
+    //span
+    appendToLI('span', 'textContent', text)
+    //label and checkbox
+    appendToLI('label', 'textContent', 'Confirmed').appendChild(
+      createElement('input', 'type', 'checkbox')
+    )
+    //edit button
+    appendToLI('button', 'textContent', 'edit')
+    //remove button
+    appendToLI('button', 'textContent', 'remove')
 
     return li
   }
@@ -80,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.value = ''
   })
 
+  //possibly look into hiding when unchecked during filter
   //use ul to get to checkbox change
   ul.addEventListener('change', (e) => {
     e.preventDefault()
@@ -105,10 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const li = button.parentNode
     const ul = li.parentNode
 
-    if (button.tagName === 'BUTTON') {
-      if (button.textContent === 'remove') {
+    const nameActions = {
+      remove: () => {
         ul.removeChild(li)
-      } else if (button.textContent === 'edit') {
+      },
+      edit: () => {
         //find the span element within this li
         const span = li.firstElementChild
         //create text element to replace invitee's name
@@ -122,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
         li.removeChild(span)
         //change button's value to save
         button.textContent = 'save'
-      } else if (button.textContent === 'save') {
+      },
+      save: () => {
         //undo edit to save
         //get input, save to input
         const input = li.firstElementChild
@@ -137,6 +142,20 @@ document.addEventListener('DOMContentLoaded', () => {
         //change button's value to edit
         button.textContent = 'edit'
       }
+    }
+
+    if (button.tagName === 'BUTTON') {
+      const action = button.textContent
+      //the following replaces if chain statement
+      //select and run action in button's name -> make sure to invoke
+      nameActions[action]()
+      /* if (action === 'remove') {
+        nameActions.remove()
+      } else if (action === 'edit') {
+        nameActions.edit()
+      } else if (action === 'save') {
+        nameActions.save()
+      } */
     }
   })
 })
