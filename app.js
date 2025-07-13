@@ -159,3 +159,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })
 })
+
+/*
+--UPDATE ASSIGNMENTS
+[ ] Validation - Alerts
+  [ ] Empty Strings
+  [ ] Duplicate
+[ ] Checkboxes
+  [ ] "Confirm" when unchecked/"Confirmed" when checked
+  [ ] Text Nodes
+  [ ] When hide unresponded checkbox is on, confirmed checkboxes still show up - Redundant
+[ ] Add text notes
+[ ] Local Storage to save state (no emptying on refresh)
+*/
