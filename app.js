@@ -1,6 +1,41 @@
 const form = document.getElementById('registrar')
+const mainDiv = document.querySelector('.main')
 const input = form.querySelector('input')
 const ul = document.getElementById('invitedList')
+
+//create elements for checkbox div
+const div = document.createElement('div')
+const filterLabel = document.createElement('label')
+const filterCheckBox = document.createElement('input')
+
+//create content for checkbox div
+filterLabel.textContent = "Hide those who haven't responded"
+filterCheckBox.type = 'checkbox'
+div.appendChild(filterLabel)
+div.appendChild(filterCheckBox)
+mainDiv.insertBefore(div, ul)
+
+//filter out invitees who have not responded yet
+filterCheckBox.addEventListener('change', (e) => {
+  e.preventDefault()
+  const isChecked = e.target.checked
+  const list = ul.children
+  if (isChecked) {
+    for (let i = 0; i < list.length; i++) {
+      let li = list[i]
+      if (li.className === 'responded') {
+        li.style.display = ''
+      } else {
+        li.style.display = 'none'
+      }
+    }
+  } else {
+    for (let i = 0; i < list.length; i++) {
+      let li = list[i]
+      li.style.display = ''
+    }
+  }
+})
 
 //createLI function to make code more modular, removed from form eventListener
 const createLI = (text) => {
@@ -61,6 +96,7 @@ ul.addEventListener('change', (e) => {
   }
 })
 
+//button event listener
 ul.addEventListener('click', (e) => {
   //can set to button's textContent or other parameter to differentiate
   //here, we only have one button per child in ul, so tagName suffices -> obviously this has changed
