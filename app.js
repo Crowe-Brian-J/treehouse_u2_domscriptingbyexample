@@ -34,13 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadStoredList = () => {
     const savedList = getListFromStorage()
     savedList.forEach((item) => {
-      const li = createLI(item.name, item.confirmed)
+      const li = createLI(item.name, item.confirmed, item.note)
       ul.appendChild(li)
     })
   }
 
   //createLI function to make code more modular, removed from form eventListener
-  const createLI = (text, confirmed = false) => {
+  const createLI = (text, confirmed = false, note = '') => {
     const li = document.createElement('li')
 
     //function to clean up process for creating elements
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //create and append necessary elements
     appendToLI('span', 'textContent', text)
     //change to confirm/confirmed
-    const labelText = confirmed ? 'confirmed' : 'confirm'
+    const labelText = confirmed ? 'Confirmed' : 'Confirm?'
     const label = appendToLI('label', 'textContent', labelText)
     const checkbox = createElement('input', 'type', 'checkbox')
     checkbox.checked = confirmed
@@ -71,6 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     appendToLI('button', 'textContent', 'edit')
     //remove button
     appendToLI('button', 'textContent', 'remove')
+
+    //add notes box
+    const notesBox = document.createElement('textarea')
+    notesBox.placeholder = 'Add notes...'
+    notesBox.value = note
+    li.appendChild(notesBox)
 
     return li
   }
@@ -112,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault()
     //set text, create list item
     const text = input.value
-    const li = createLI(text)
 
     //if form is invalid
     if (text === '') {
@@ -130,7 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     ul.appendChild(createLI(text))
-    saveListToStorage([...savedList, { name: text, confirmed: false }])
+    saveListToStorage([
+      ...savedList,
+      { name: text, confirmed: false, note: '' }
+    ])
     input.value = ''
   })
 
@@ -146,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const label = checkbox.parentNode
 
       //update label based on state
-      label.textContent = confirmed ? 'confirmed' : 'confirm'
+      label.textContent = confirmed ? 'Confirmed' : 'Confirm?'
       label.appendChild(checkbox)
 
       //check if confirmed
@@ -154,12 +162,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       //update local storage
       const name = listItem.querySelector('span').textContent
+      const notesValue = listItem.querySelector('textarea')?.value || ''
       const updatedList = getListFromStorage().map((item) =>
-        item.name === name ? { ...item, confirmed } : item
+        item.name === name
+          ? { ...item, confirmed: checked, note: notesValue }
+          : item
       )
       saveListToStorage(updatedList)
     }
   })
+
+  //save notes on text area
+  ul.addEventListener(
+    'blur',
+    (e) => {
+      if (e.target.tagName === 'TEXTAREA') {
+        const textArea = e.target
+        const li = textArea.closest('li')
+        const name = li.querySelector('span')
+        const newNote = textArea.value
+
+        const updatedList = getListFromStorage().map((item) =>
+          item.name === name ? { ...item, note: newNote } : item
+        )
+        saveListToStorage(updatedList)
+      }
+    },
+    true
+  ) //argument to capture notes on blur
 
   //button event listener
   ul.addEventListener('click', (e) => {
@@ -209,9 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
           return
         }
 
+        const notesValue = li.querySelector('textarea')?.value || ''
+
         //update list
         const updatedList = getListFromStorage().map((item) =>
-          item.name === name ? { ...item, name: newName } : item
+          item.name === name
+            ? { ...item, name: newName, note: notesValue }
+            : item
         )
         saveListToStorage(updatedList)
 
@@ -226,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const action = button.textContent
     nameActions[action]?.()
   })
+
   loadStoredList()
 })
 
@@ -233,9 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
 --UPDATE ASSIGNMENTS
 [X] Validation - Alerts
   [X] Empty Strings
-  [X] Duplicate
+  [X] Duplicates
 [ ] Checkboxes
-  [ ] "Confirm" when unchecked/"Confirmed" when checked
+  [X] "Confirm" when unchecked/"Confirmed" when checked
   [ ] Text Nodes
   [X] When hide unresponded checkbox is on, confirmed checkboxes still show up - Redundant
 [ ] Add text notes
