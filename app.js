@@ -59,13 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //create and append necessary elements
     appendToLI('span', 'textContent', text)
-    //change to confirm/confirmed
-    const labelText = confirmed ? 'Confirmed' : 'Confirm?'
-    const label = appendToLI('label', 'textContent', labelText)
-    const checkbox = createElement('input', 'type', 'checkbox')
+
+    //change to confirm?/confirmed
+    const label = document.createElement('label')
+    const textNode = document.createTextNode(
+      confirmed ? 'Confirmed' : 'Confirm?'
+    )
+    label.appendChild(textNode)
+
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
     checkbox.checked = confirmed
-    if (confirmed) li.className = 'responded'
     label.appendChild(checkbox)
+    li.appendChild(label)
+
+    if (confirmed) li.className = 'responded'
 
     //edit button
     appendToLI('button', 'textContent', 'edit')
@@ -154,18 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const label = checkbox.parentNode
 
       //update label based on state
-      label.textContent = confirmed ? 'Confirmed' : 'Confirm?'
-      label.appendChild(checkbox)
+      const textNode = label.firstChild
+      textNode.nodeValue = confirmed ? 'Confirmed' : 'Confirm?'
 
       //check if confirmed
-      listItem.className = confirmed ? 'responded' : ''
+      listItem.className = checkbox.checked ? 'responded' : ''
 
       //update local storage
       const name = listItem.querySelector('span').textContent
       const notesValue = listItem.querySelector('textarea')?.value || ''
       const updatedList = getListFromStorage().map((item) =>
         item.name === name
-          ? { ...item, confirmed: checked, note: notesValue }
+          ? { ...item, confirmed: checkbox.checked, note: notesValue }
           : item
       )
       saveListToStorage(updatedList)
