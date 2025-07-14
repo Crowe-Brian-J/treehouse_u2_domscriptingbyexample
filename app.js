@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const STORAGE_KEY = 'inviteList'
+
   const form = document.getElementById('registrar')
   const mainDiv = document.querySelector('.main')
   const input = form.querySelector('input')
@@ -12,34 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
   //create content for checkbox div
   filterLabel.textContent = "Hide those who haven't responded"
   filterCheckBox.type = 'checkbox'
+
   div.appendChild(filterLabel)
   div.appendChild(filterCheckBox)
   mainDiv.insertBefore(div, ul)
 
-  //filter out invitees who have not responded yet
-  filterCheckBox.addEventListener('change', (e) => {
-    e.preventDefault()
-    const isChecked = e.target.checked
-    const list = ul.children
-    if (isChecked) {
-      for (let i = 0; i < list.length; i++) {
-        let li = list[i]
-        if (li.className === 'responded') {
-          li.style.display = ''
-        } else {
-          li.style.display = 'none'
-        }
-      }
-    } else {
-      for (let i = 0; i < list.length; i++) {
-        let li = list[i]
-        li.style.display = ''
-      }
-    }
-  })
+  //save current list to storage
+  const saveListToStorage = (list) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  }
+
+  //get list from local storage
+  const getListFromStorage = (list) => {
+    const data = localStorage.getItem(STORAGE_KEY)
+    return data ? JSON.parse(data) : []
+  }
+
+  //load invitees from local storage
+  const loadStoredList = () => {
+    const savedList = getListFromStorage()
+    savedList.forEach((item) => {
+      const li = createLI(item.name, item.confirmed)
+      ul.appendChild(li)
+    })
+  }
 
   //createLI function to make code more modular, removed from form eventListener
-  const createLI = (text) => {
+  const createLI = (text, confirmed = false) => {
     const li = document.createElement('li')
 
     //function to clean up process for creating elements
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       element[property] = value
       return element
     }
+
     //function to append child
     const appendToLI = (elementName, property, value) => {
       const element = createElement(elementName, property, value)
@@ -56,12 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     //create and append necessary elements
-    //span
-    appendToLI('span', 'textContent', text)
-    //label and checkbox
-    appendToLI('label', 'textContent', 'Confirmed').appendChild(
-      createElement('input', 'type', 'checkbox')
-    )
+    const label = appendToLI('label', 'textContent', 'Confirmed')
+    const checkbox = createElement('input', 'type', 'checkbox')
+    checkbox.checked = confirmed
+    if (confirmed) li.className = 'responded'
+    label.appendChild(checkbox)
+
     //edit button
     appendToLI('button', 'textContent', 'edit')
     //remove button
@@ -70,15 +72,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return li
   }
 
+  //filter out invitees who have not responded yet
+  filterCheckBox.addEventListener('change', (e) => {
+    e.preventDefault()
+    const isChecked = e.target.checked
+    const list = ul.children
+    for (let i = 0; i < list.length; i++) {
+      let li = list[i]
+      if (isChecked) {
+        li.style.display = li.className === 'responded' ? '' : 'none'
+      } else {
+        li.style.display = ''
+      }
+    }
+  })
+
   form.addEventListener('submit', (e) => {
     e.preventDefault()
     //set text, create list item
     const text = input.value
     const li = createLI(text)
 
-    //append list item to unordered list
-    ul.appendChild(li)
-    //clear input value
+    //if form is invalid
+    if (text === '') {
+      alert('Please enter a name.')
+      return
+    }
+
+    //check for duplicate names
+    const savedList = getListFromStorage()
+    if (
+      savedList.some((item) => item.name.toLowerCase() === text.toLowerCase())
+    ) {
+      alert('This person is already on the list.')
+      return
+    }
+
+    ul.appendChild(createLI(text))
+    saveListToStorage([...savedList, { name: text, confirmed: flase }])
     input.value = ''
   })
 
@@ -86,35 +117,47 @@ document.addEventListener('DOMContentLoaded', () => {
   //use ul to get to checkbox change
   ul.addEventListener('change', (e) => {
     e.preventDefault()
-    //set
-    const checkbox = e.target
-    const checked = checkbox.checked
-    //checkbox's parent is label -> label's parent is li
-    const listItem = checkbox.parentNode.parentNode
+    if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
+      //set
+      const checkbox = e.target
+      const listItem = checkbox.closest('li')
+      const name = listItem.querySelector('span').textContent
+      const confirmed = checkbox.checked
 
-    //if/else to change styling (based in css)
-    if (checked) {
-      listItem.className = 'responded'
-    } else {
-      listItem.className = ''
+      //check if confirmed
+      listItem.className = confirmed ? 'responded' : ''
+
+      //update list
+      const updatedList = getListFromStorage().map((item) =>
+        item.name === name ? { ...item, confirmed } : item
+      )
+      saveListToStorage(updatedList)
     }
   })
 
   //button event listener
   ul.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') return
+
     //can set to button's textContent or other parameter to differentiate
     //here, we only have one button per child in ul, so tagName suffices -> obviously this has changed
     const button = e.target
     const li = button.parentNode
-    const ul = li.parentNode
+    const name =
+      li.querySelector('span')?.textContent || li.querySelector('input')?.value
 
     const nameActions = {
       remove: () => {
+        const updatedList = getListFromStorage().filter(
+          (item) => item.name !== name
+        )
+        saveListToStorage(updatedList)
         ul.removeChild(li)
       },
+      //Do I need to update storage here?
       edit: () => {
         //find the span element within this li
-        const span = li.firstElementChild
+        const span = li.querySelector('span')
         //create text element to replace invitee's name
         const input = document.createElement('input')
         input.type = 'text'
@@ -130,16 +173,27 @@ document.addEventListener('DOMContentLoaded', () => {
       save: () => {
         //undo edit to save
         //get input, save to input
-        const input = li.firstElementChild
-        //create span element to replace input field
+        const input = li.querySelector('input[type="text"]')
+        //save input value
+        const newName = input.value
+
+        //check if edited input is blank now
+        if (newName === '') {
+          alert('Name cannot be empty.')
+          return
+        }
+
+        //update list
+        const updatedList = getListFromStorage().map((item) =>
+          item.name === name ? { ...item, name: newName } : item
+        )
+        saveListToStorage(updatedList)
+
+        //create span
         const span = document.createElement('span')
-        //give span textContent
-        span.textContent = input.value
-        //insert span before input
+        span.textContent = newName
         li.insertBefore(span, input)
-        //remove input
         li.removeChild(input)
-        //change button's value to edit
         button.textContent = 'edit'
       }
     }
@@ -163,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /*
 --UPDATE ASSIGNMENTS
 [ ] Validation - Alerts
-  [ ] Empty Strings
+  [X] Empty Strings
   [ ] Duplicate
 [ ] Checkboxes
   [ ] "Confirm" when unchecked/"Confirmed" when checked
