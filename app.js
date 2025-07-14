@@ -62,15 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //change to confirm?/confirmed
     const label = document.createElement('label')
-    const textNode = document.createTextNode(
-      confirmed ? 'Confirmed' : 'Confirm?'
-    )
-    label.appendChild(textNode)
 
     const checkbox = document.createElement('input')
     checkbox.type = 'checkbox'
     checkbox.checked = confirmed
     label.appendChild(checkbox)
+
+    //textNode moved so checkbox does not move on click
+    const textNode = document.createTextNode(
+      confirmed ? 'Confirmed' : 'Confirm?'
+    )
+    label.appendChild(textNode)
+
     li.appendChild(label)
 
     if (confirmed) li.className = 'responded'
@@ -162,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const label = checkbox.parentNode
 
       //update label based on state
-      const textNode = label.firstChild
+      const textNode = label.childNodes[1]
       textNode.nodeValue = confirmed ? 'Confirmed' : 'Confirm?'
 
       //check if confirmed

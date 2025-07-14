@@ -91,9 +91,11 @@ li input[type=text] {
   border: 1px dotted rgba(0,0,0, .2);
 }
 li label {
-  font-size: .9em;
-  display: block;
-  color: rgba(112, 112, 112, .55);
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: rgba(112, 112, 112, 0.55);
 }
 li span, 
 li input[type=text]:first-child {
