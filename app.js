@@ -78,12 +78,30 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault()
     const isChecked = e.target.checked
     const list = ul.children
+
     for (let i = 0; i < list.length; i++) {
-      let li = list[i]
+      const li = list[i]
+      //look if this li has been affirmatively responded to
+      const responded = li.classList.contains('responded')
+      //find the label when it has
+      const label = li.querySelector('label')
+
       if (isChecked) {
+        //hide unconfirmed
         li.style.display = li.className === 'responded' ? '' : 'none'
+
+        //hide individual confirmations
+        if (label) {
+          label.style.display = 'none'
+        }
       } else {
+        //show everyone
         li.style.display = ''
+
+        //show the checkboxes again
+        if (label) {
+          label.style.display = ''
+        }
       }
     }
   })
