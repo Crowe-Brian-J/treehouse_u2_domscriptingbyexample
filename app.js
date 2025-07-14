@@ -59,7 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //create and append necessary elements
     appendToLI('span', 'textContent', text)
-    const label = appendToLI('label', 'textContent', 'Confirmed')
+    //change to confirm/confirmed
+    const labelText = confirmed ? 'confirmed' : 'confirm'
+    const label = appendToLI('label', 'textContent', labelText)
     const checkbox = createElement('input', 'type', 'checkbox')
     checkbox.checked = confirmed
     if (confirmed) li.className = 'responded'
@@ -139,14 +141,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') {
       //set
       const checkbox = e.target
-      const listItem = checkbox.closest('li')
-      const name = listItem.querySelector('span').textContent
       const confirmed = checkbox.checked
+      const listItem = checkbox.closest('li')
+      const label = checkbox.parentNode
+
+      //update label based on state
+      label.textContent = confirmed ? 'confirmed' : 'confirm'
+      label.appendChild(checkbox)
 
       //check if confirmed
       listItem.className = confirmed ? 'responded' : ''
 
-      //update list
+      //update local storage
+      const name = listItem.querySelector('span').textContent
       const updatedList = getListFromStorage().map((item) =>
         item.name === name ? { ...item, confirmed } : item
       )
@@ -230,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 [ ] Checkboxes
   [ ] "Confirm" when unchecked/"Confirmed" when checked
   [ ] Text Nodes
-  [ ] When hide unresponded checkbox is on, confirmed checkboxes still show up - Redundant
+  [X] When hide unresponded checkbox is on, confirmed checkboxes still show up - Redundant
 [ ] Add text notes
 [X] Local Storage to save state (no emptying on refresh)
 */
